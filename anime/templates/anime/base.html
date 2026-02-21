@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Anime Atlas</title>
+    <link rel="stylesheet" href="{% static 'anime/styles.css' %}" />
+  </head>
+  <body>
+    <div class="page">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{% url 'home' %}">
+            <span class="brand-mark">AA</span>
+            <span class="brand-title">Anime Atlas</span>
+          </a>
+          <div class="navbar-collapse">
+            <ul class="navbar-nav me-auto">
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'home' %}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'about' %}">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+              </li>
+              <li class="nav-item dropdown">
+                <button class="nav-link dropdown-toggle" type="button">Genres</button>
+                <ul class="dropdown-menu">
+                  {% for genre in nav_genres %}
+                    <li>
+                      <a class="dropdown-item" href="{% url 'genre_page' genre.slug %}">
+                        {{ genre.name }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </li>
+            </ul>
+            <form class="d-flex" action="{% url 'home' %}" method="get">
+              <input
+                class="form-control me-2"
+                type="search"
+                name="q"
+                placeholder="Search anime titles..."
+                value="{{ search_query|default:'' }}"
+              />
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+            <a
+              class="btn btn-secondary btn-small user-btn"
+              href="{% if user.is_authenticated %}{% url 'logout' %}{% else %}{% url 'login' %}{% endif %}"
+              title="{% if user.is_authenticated %}Logged in as {{ user.username }}{% else %}Login or create an account{% endif %}"
+            >
+              User
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if user.is_authenticated and user_profile and not user_profile.is_verified %}
+        <div class="verify-banner">
+          Your account is not verified yet. Check your email for the verification link.
+        </div>
+      {% endif %}
+
+      <main class="content">{% block content %}{% endblock %}</main>
+
+      <footer class="footer">
+        <p>Curated for new and returning anime fans.</p>
+      </footer>
+    </div>
+    {% if not user.is_authenticated %}
+      <div class="signup-strip">
+        <div class="signup-strip-inner">
+          <p>
+            Get personalized anime picks, genre updates, and weekly highlights.
+            Join Anime Atlas for free.
+          </p>
+          <a class="btn btn-primary btn-small" href="{% url 'signup' %}">Get started</a>
+        </div>
+      </div>
+    {% endif %}
+  </body>
+</html>

@@ -1,0 +1,23 @@
+{% extends 'anime/base.html' %}
+
+{% block content %}
+  <section class="section form-section">
+    <div class="section-title">
+      <h2>Login</h2>
+      <p>Welcome back. Keep exploring new anime.</p>
+    </div>
+    <form class="form-card" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <label>
+        Username
+        {{ form.username }}
+      </label>
+      <label>
+        Password
+        {{ form.password }}
+      </label>
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+  </section>
+{% endblock %}

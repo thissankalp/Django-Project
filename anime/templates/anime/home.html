@@ -1,0 +1,121 @@
+{% extends 'anime/base.html' %}
+
+{% block content %}
+  <section class="hero">
+    <div>
+      <p class="hero-badge">Anime you will remember</p>
+      <h1>Stories with heart, action, and bold manga energy.</h1>
+      <p class="hero-copy">
+        Discover anime that blends unforgettable characters with high-impact visuals.
+        Each pick below includes a clear reason to watch and a quick genre snapshot.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#dashboard">See dashboard</a>
+        <a class="btn btn-secondary" href="#featured">Explore picks</a>
+      </div>
+    </div>
+    <div class="hero-panel">
+      <div class="panel-header">Why watch anime?</div>
+      <ul class="panel-list">
+        <li>Expressive art styles that feel cinematic.</li>
+        <li>Character arcs that reward long-term viewing.</li>
+        <li>Worlds that mix imagination with emotion.</li>
+        <li>Genre variety from cozy to intense.</li>
+      </ul>
+      <div class="panel-highlight">
+        Manga-style panels. Bold outlines. Zero glass or texture effects.
+      </div>
+      <p class="panel-note">{{ api_note }}</p>
+    </div>
+  </section>
+
+  <section id="featured" class="section">
+    <div class="section-title">
+      {% if search_query %}
+        <h2>Search results</h2>
+        <p>Showing results for "{{ search_query }}".</p>
+      {% else %}
+        <h2>Featured anime picks</h2>
+        <p>Quick recommendations with a clear reason to press play.</p>
+      {% endif %}
+    </div>
+
+    <div class="card-grid">
+      {% for anime in animes %}
+        <article class="card">
+          {% if anime.image_url %}
+            <img class="card-image" src="{{ anime.image_url }}" alt="{{ anime.title }}" />
+          {% endif %}
+          <div class="card-top">
+            <span class="card-genre">{{ anime.genre }}</span>
+            <span class="card-rating">★ {{ anime.rating }}</span>
+          </div>
+          <h3>{{ anime.title }}</h3>
+          <p class="card-tagline">{{ anime.tagline }}</p>
+          <p class="card-reason">{{ anime.reason }}</p>
+          <div class="card-meta">
+            <span>{{ anime.seasons }}</span>
+            <span>{{ anime.genres|join:", " }}</span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section id="dashboard" class="section">
+    <div class="section-title">
+      <h2>Dashboard</h2>
+      <p>Live overview of what is trending and how to explore it.</p>
+    </div>
+    <div class="metric-grid">
+      {% for metric in metrics %}
+        <div class="metric-card">
+          <p class="metric-value">{{ metric.value }}</p>
+          <p class="metric-label">{{ metric.label }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>Highlights</h2>
+      <p>Why these series work so well for first-time viewers.</p>
+    </div>
+    <div class="card-grid">
+      {% for item in highlights %}
+        <article class="card card-alt">
+          <h3>{{ item.title }}</h3>
+          <p class="card-reason">{{ item.detail }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>Genres to explore</h2>
+      <p>Popular categories and how many series exist in each.</p>
+    </div>
+    <div class="genre-grid">
+      {% for genre in genres %}
+        <div class="genre-card">
+          <p class="genre-name">{{ genre.name }}</p>
+          <p class="genre-count">{{ genre.count }} titles</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section about-section">
+    <div class="section-title">
+      <h2>About anime</h2>
+      <p>Quick facts for newcomers looking for the right starting point.</p>
+    </div>
+    <ul class="about-list">
+      {% for point in about_points %}
+        <li>{{ point }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

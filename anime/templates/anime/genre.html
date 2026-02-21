@@ -1,0 +1,46 @@
+{% extends 'anime/base.html' %}
+
+{% block content %}
+  <section class="hero">
+    <div>
+      <p class="hero-badge">{{ genre.name }} genre</p>
+      <h1>Top {{ genre.name }} anime picks.</h1>
+      <p class="hero-copy">
+        Explore standout {{ genre.name|lower }} series, ranked by community scores and curated for
+        strong storytelling.
+      </p>
+    </div>
+    <div class="hero-panel">
+      <div class="panel-header">Live feed</div>
+      <p class="panel-copy">{{ api_note }}</p>
+      <div class="panel-highlight">Manga-styled layout. Bold panels. Clean visuals.</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>{{ genre.name }} spotlight</h2>
+      <p>Live titles pulled from the Jikan API.</p>
+    </div>
+    <div class="card-grid">
+      {% for anime in animes %}
+        <article class="card">
+          {% if anime.image_url %}
+            <img class="card-image" src="{{ anime.image_url }}" alt="{{ anime.title }}" />
+          {% endif %}
+          <div class="card-top">
+            <span class="card-genre">{{ anime.genre }}</span>
+            <span class="card-rating">★ {{ anime.rating }}</span>
+          </div>
+          <h3>{{ anime.title }}</h3>
+          <p class="card-tagline">{{ anime.tagline }}</p>
+          <p class="card-reason">{{ anime.reason }}</p>
+          <div class="card-meta">
+            <span>{{ anime.seasons }}</span>
+            <span>{{ anime.genres|join:", " }}</span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

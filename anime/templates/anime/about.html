@@ -1,0 +1,34 @@
+{% extends 'anime/base.html' %}
+
+{% block content %}
+  <section class="hero">
+    <div>
+      <p class="hero-badge">About Anime Atlas</p>
+      <h1>Helping you find anime that fits your mood.</h1>
+      <p class="hero-copy">
+        Anime Atlas is a manga-styled guide that highlights must-watch series,
+        explains genres clearly, and makes it easy to discover your next favorite show.
+      </p>
+    </div>
+    <div class="hero-panel">
+      <div class="panel-header">What we focus on</div>
+      <ul class="panel-list">
+        <li>Clear reasons to watch each title.</li>
+        <li>Genre tips for first-time viewers.</li>
+        <li>Short, useful descriptions over hype.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section about-section">
+    <div class="section-title">
+      <h2>Quick facts</h2>
+      <p>Helpful context if you are new to anime.</p>
+    </div>
+    <ul class="about-list">
+      {% for point in about_points %}
+        <li>{{ point }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

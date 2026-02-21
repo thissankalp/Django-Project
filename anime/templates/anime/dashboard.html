@@ -1,0 +1,50 @@
+{% extends 'anime/base.html' %}
+
+{% block content %}
+  <section class="dashboard-hero">
+    <div>
+      <p class="hero-badge">Dashboard</p>
+      <h1>Anime insights at a glance.</h1>
+      <p class="hero-copy">
+        Keep track of our latest picks, community favorites, and curated watch advice.
+      </p>
+    </div>
+    <div class="hero-panel hero-panel-alt">
+      <div class="panel-header">Weekly focus</div>
+      <p class="panel-copy">
+        This week is all about high-energy soundtracks, sharp visual direction,
+        and anime that feels like a stylish comic panel in motion.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>Snapshot metrics</h2>
+      <p>Short stats to show what the library is highlighting right now.</p>
+    </div>
+    <div class="metric-grid">
+      {% for metric in metrics %}
+        <div class="metric-card">
+          <p class="metric-value">{{ metric.value }}</p>
+          <p class="metric-label">{{ metric.label }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>Highlights</h2>
+      <p>Guidance that helps viewers pick their next series.</p>
+    </div>
+    <div class="card-grid">
+      {% for item in highlights %}
+        <article class="card card-alt">
+          <h3>{{ item.title }}</h3>
+          <p class="card-reason">{{ item.detail }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

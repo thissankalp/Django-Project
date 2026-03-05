@@ -57,6 +57,23 @@
             <span>{{ anime.seasons }}</span>
             <span>{{ anime.genres|join:", " }}</span>
           </div>
+          {% if user.is_authenticated and anime.mal_id %}
+            <form method="post" action="{% url 'watchlist_add' %}" class="wishlist-form">
+              {% csrf_token %}
+              <input type="hidden" name="mal_id" value="{{ anime.mal_id }}">
+              <input type="hidden" name="title" value="{{ anime.title }}">
+              <input type="hidden" name="tagline" value="{{ anime.tagline }}">
+              <input type="hidden" name="description" value="{{ anime.reason }}">
+              <input type="hidden" name="main_genre" value="{{ anime.genre }}">
+              <input type="hidden" name="seasons" value="{{ anime.seasons }}">
+              <input type="hidden" name="genres_text" value="{{ anime.genres|join:', ' }}">
+              <input type="hidden" name="image_url" value="{{ anime.image_url }}">
+              <input type="hidden" name="rating" value="{{ anime.rating }}">
+              <button type="submit" class="btn btn-secondary btn-small">
+                Add to watchlist
+              </button>
+            </form>
+          {% endif %}
         </article>
       {% endfor %}
     </div>

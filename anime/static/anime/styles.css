@@ -12,7 +12,7 @@ body {
 }
 
 .page {
-  max-width: 1200px;
+  max-width: 1536px;
   margin: 0 auto;
   padding: 32px 20px 40px;
 }
@@ -193,6 +193,26 @@ body {
   align-self: center;
 }
 
+.search-form {
+  margin-left: auto;
+  gap: 0;
+}
+
+.search-form .form-control {
+  border-right: none;
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-text {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .content {
   display: flex;
   flex-direction: column;
@@ -328,6 +348,11 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 18px;
+}
+
+.watchlist-grid {
+  max-width: 380px;
+  margin: 0 auto;
 }
 
 .card {
@@ -554,7 +579,8 @@ body {
   }
 
   .navbar-nav,
-  .d-flex {
+  .d-flex,
+  .user-controls {
     justify-content: center;
   }
 }

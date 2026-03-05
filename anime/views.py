@@ -5,14 +5,13 @@ import urllib.request
 
 from django.contrib import messages
 from django.contrib.auth import login
-from django.core import signing
-from django.core.mail import send_mail
-from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .data import GENRE_TABS
 from .forms import ContactForm, SignUpForm
-from .models import Profile
+from .models import WishlistItem
 
 FALLBACK_ANIME = [
     {
@@ -73,10 +72,6 @@ ABOUT_POINTS = [
     "Great starter picks usually have shorter seasons and tight narratives.",
 ]
 
-VERIFY_SALT = "anime-verify"
-VERIFY_MAX_AGE = 60 * 60 * 24
-
-
 def fetch_json(url):
     request = urllib.request.Request(
         url,
@@ -109,6 +104,7 @@ def build_anime_cards(items):
         episodes = item.get("episodes") or "?"
         cards.append(
             {
+                "mal_id": item.get("mal_id"),
                 "title": item.get("title") or "Untitled",
                 "tagline": item.get("title_english") or item.get("title_japanese") or "A standout series",
                 "reason": shorten(item.get("synopsis")),
@@ -132,28 +128,6 @@ def _average_score(animes):
     if not scores:
         return 0.0
     return sum(scores) / len(scores)
-
-
-def _verification_token(user):
-    return signing.dumps({"user_id": user.id}, salt=VERIFY_SALT)
-
-
-def _verify_token(token):
-    data = signing.loads(token, salt=VERIFY_SALT, max_age=VERIFY_MAX_AGE)
-    return data.get("user_id")
-
-
-def _send_verification_email(user, request):
-    token = _verification_token(user)
-    verify_url = request.build_absolute_uri(reverse("verify_email", args=[token]))
-    subject = "Verify your Anime Atlas account"
-    message = (
-        "Welcome to Anime Atlas!\n\n"
-        "Please verify your account by visiting this link:\n"
-        f"{verify_url}\n\n"
-        "If you did not sign up, you can ignore this email."
-    )
-    send_mail(subject, message, None, [user.email], fail_silently=True)
 
 
 def home(request):
@@ -217,6 +191,7 @@ def home(request):
             "highlights": highlights,
             "about_points": ABOUT_POINTS,
             "api_note": api_note,
+            "search_query": search_query,
         },
     )
 
@@ -282,15 +257,9 @@ def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.email = form.cleaned_data["email"]
-            user.save()
-            _send_verification_email(user, request)
+            user = form.save()
             login(request, user)
-            messages.info(
-                request,
-                "Account created. Check the console email to verify your account.",
-            )
+            messages.success(request, "Account created. You are now logged in.")
             return redirect("home")
     else:
         form = SignUpForm()
@@ -298,23 +267,66 @@ def signup(request):
     return render(request, "anime/signup.html", {"form": form})
 
 
-def verify_email(request, token):
+@login_required
+def wishlist_list(request):
+    items = WishlistItem.objects.filter(user=request.user)
+    return render(request, "anime/wishlist.html", {"items": items})
+
+
+@login_required
+def wishlist_add(request):
+    if request.method != "POST":
+        return redirect("home")
+
+    mal_id = request.POST.get("mal_id")
+    title = request.POST.get("title") or "Untitled"
+    tagline = request.POST.get("tagline", "")
+    description = request.POST.get("description", "")
+    main_genre = request.POST.get("main_genre", "")
+    seasons = request.POST.get("seasons", "")
+    genres_text = request.POST.get("genres_text", "")
+    image_url = request.POST.get("image_url", "")
+    rating = request.POST.get("rating", "")
+
+    if not mal_id:
+        messages.error(request, "Could not add item to wishlist.")
+        return redirect("home")
+
     try:
-        user_id = _verify_token(token)
-    except signing.BadSignature:
-        messages.error(request, "Verification link is invalid or expired.")
+        mal_id_int = int(mal_id)
+    except (TypeError, ValueError):
+        messages.error(request, "Invalid anime identifier.")
         return redirect("home")
 
-    profile = Profile.objects.filter(user_id=user_id).first()
-    if not profile:
-        messages.error(request, "Account not found.")
-        return redirect("home")
-
-    if profile.is_verified:
-        messages.info(request, "Your account is already verified.")
+    item, created = WishlistItem.objects.get_or_create(
+        user=request.user,
+        mal_id=mal_id_int,
+        defaults={
+            "title": title,
+            "image_url": image_url,
+            "rating": rating,
+            "tagline": tagline,
+            "description": description,
+            "main_genre": main_genre,
+            "seasons": seasons,
+            "genres_text": genres_text,
+        },
+    )
+    if created:
+        messages.success(request, f'"{item.title}" added to your wishlist.')
     else:
-        profile.is_verified = True
-        profile.save()
-        messages.success(request, "Your account is verified. Welcome!")
+        messages.info(request, f'"{item.title}" is already in your wishlist.')
 
-    return redirect("home")
+    return redirect(request.META.get("HTTP_REFERER", "home"))
+
+
+@login_required
+def wishlist_remove(request, pk):
+    if request.method != "POST":
+        return redirect("wishlist")
+
+    item = get_object_or_404(WishlistItem, pk=pk, user=request.user)
+    title = item.title
+    item.delete()
+    messages.success(request, f'"{title}" was removed from your wishlist.')
+    return redirect(request.META.get("HTTP_REFERER", "wishlist"))

@@ -12,12 +12,18 @@
       <label>
         Username
         {{ form.username }}
+        {{ form.username.errors }}
       </label>
       <label>
         Password
         {{ form.password }}
+        {{ form.password.errors }}
       </label>
       <button class="btn btn-primary" type="submit">Login</button>
     </form>
+    <p class="form-note">
+      Need an account?
+      <a href="{% url 'signup' %}">Sign up here</a>.
+    </p>
   </section>
 {% endblock %}

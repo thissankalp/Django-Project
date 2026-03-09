@@ -139,10 +139,10 @@ def home(request):
     try:
         if search_query:
             query = urllib.parse.quote(search_query)
-            anime_data = fetch_json(f"https://api.jikan.moe/v4/anime?q={query}&limit=6")
+            anime_data = fetch_json(f"https://api.jikan.moe/v4/anime?q={query}&limit=10")
             api_note = f"Search results for '{search_query}'."
         else:
-            anime_data = fetch_json("https://api.jikan.moe/v4/top/anime?limit=6")
+            anime_data = fetch_json("https://api.jikan.moe/v4/top/anime?limit=10")
         genre_data = fetch_json("https://api.jikan.moe/v4/genres/anime?filter=genres")
         animes = build_anime_cards(anime_data.get("data", [])) or FALLBACK_ANIME
         genres = [
@@ -158,6 +158,17 @@ def home(request):
         api_note = "Live data unavailable. Showing curated starter picks."
         if search_query:
             api_note = "Live data unavailable. Showing curated starter picks instead."
+
+    watchlist_ids = set()
+    if request.user.is_authenticated:
+        watchlist_ids = set(
+            WishlistItem.objects.filter(user=request.user).values_list("mal_id", flat=True)
+        )
+
+    if isinstance(animes, list):
+        for card in animes:
+            mal_id = card.get("mal_id")
+            card["in_watchlist"] = bool(mal_id and mal_id in watchlist_ids)
 
     metrics = [
         {"label": "Featured series", "value": str(len(animes))},
@@ -226,6 +237,17 @@ def genre_page(request, slug):
         animes = FALLBACK_ANIME
         api_note = "Live data unavailable. Showing curated starter picks."
 
+    watchlist_ids = set()
+    if request.user.is_authenticated:
+        watchlist_ids = set(
+            WishlistItem.objects.filter(user=request.user).values_list("mal_id", flat=True)
+        )
+
+    if isinstance(animes, list):
+        for card in animes:
+            mal_id = card.get("mal_id")
+            card["in_watchlist"] = bool(mal_id and mal_id in watchlist_ids)
+
     return render(
         request,
         "anime/genre.html",
@@ -239,6 +261,34 @@ def genre_page(request, slug):
 
 def about(request):
     return render(request, "anime/about.html", {"about_points": ABOUT_POINTS})
+
+
+def anime_detail(request, mal_id):
+    try:
+        anime_data = fetch_json(f"https://api.jikan.moe/v4/anime/{mal_id}/full")
+        anime = anime_data.get("data", {})
+        
+        related_animes = []
+        genres = anime.get("genres", [])
+        if genres:
+            genre_id = genres[0].get("mal_id")
+            if genre_id:
+                related_data = fetch_json(f"https://api.jikan.moe/v4/anime?genres={genre_id}&order_by=popularity&limit=8")
+                cards = build_anime_cards(related_data.get("data", []))
+                related_animes = [c for c in cards if c["mal_id"] != mal_id][:5]
+                
+                if request.user.is_authenticated:
+                    watchlist_ids = set(
+                        WishlistItem.objects.filter(user=request.user).values_list("mal_id", flat=True)
+                    )
+                    for card in related_animes:
+                        card["in_watchlist"] = bool(card.get("mal_id") and card.get("mal_id") in watchlist_ids)
+
+    except (urllib.error.URLError, json.JSONDecodeError, TimeoutError):
+        messages.error(request, "Could not fetch anime details.")
+        return redirect("home")
+
+    return render(request, "anime/anime_detail.html", {"anime": anime, "related_animes": related_animes})
 
 
 def contact(request):

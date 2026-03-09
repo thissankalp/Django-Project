@@ -370,7 +370,8 @@ body {
 
 .card-image {
   width: 100%;
-  height: 160px;
+  height: auto;
+  aspect-ratio: 2 / 3;
   object-fit: cover;
   border: 2px solid #151515;
 }
@@ -405,6 +406,39 @@ body {
   justify-content: space-between;
   font-size: 0.85rem;
   color: #3b3b3b;
+}
+
+.card-grid-small {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.card-small {
+  padding: 12px;
+  gap: 8px;
+}
+
+.card-small h3 {
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.card-small .card-top {
+  font-size: 0.8rem;
+}
+
+.card-small .card-tagline {
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+}
+
+.card-small .card-reason {
+  font-size: 0.8rem;
+}
+
+.card-small .card-meta {
+  font-size: 0.8rem;
 }
 
 .metric-grid {

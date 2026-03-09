@@ -1,0 +1,124 @@
+{% extends 'anime/base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'home' %}" class="btn btn-secondary btn-small">← Back to Home</a>
+</div>
+<section class="section">
+    <div class="card-grid" style="grid-template-columns: 1fr 2fr; gap: 32px; align-items: start;">
+        <!-- Anime Poster -->
+        <div>
+            <img src="{{ anime.images.jpg.large_image_url|default:anime.images.jpg.image_url }}" alt="{{ anime.title }}"
+                style="width: 100%; border: 3px solid #151515; box-shadow: 6px 6px 0 #151515; object-fit: cover; aspect-ratio: 2 / 3;" />
+        </div>
+
+        <!-- Anime Information -->
+        <div class="hero-panel" style="gap: 16px;">
+            <div>
+                <h1 style="font-size: 2.4rem; margin-bottom: 4px; line-height: 1.1;">{{ anime.title }}</h1>
+                {% if anime.title_english and anime.title_english != anime.title %}
+                <p style="font-size: 1.2rem; color: #2d2d2d; font-weight: bold;">{{ anime.title_english }}</p>
+                {% elif anime.title_japanese and anime.title_japanese != anime.title %}
+                <p style="font-size: 1.2rem; color: #2d2d2d; font-weight: bold;">{{ anime.title_japanese }}</p>
+                {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <span class="hero-badge">Rating: ★ {{ anime.score|default:'N/A' }}</span>
+                {% if anime.type %}
+                <span class="hero-badge">{{ anime.type }} ({{ anime.episodes|default:'?' }} eps)</span>
+                {% endif %}
+                {% if anime.status %}
+                <span class="hero-badge">{{ anime.status }}</span>
+                {% endif %}
+                {% if anime.year %}
+                <span class="hero-badge">{{ anime.year }}</span>
+                {% endif %}
+            </div>
+
+            <div>
+                <div class="panel-header" style="margin-bottom: 8px;">Synopsis</div>
+                <p class="panel-copy">{{ anime.synopsis|default:"No synopsis available." }}</p>
+            </div>
+
+            {% if anime.genres %}
+            <div>
+                <div class="panel-header" style="margin-bottom: 8px;">Genres</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    {% for genre in anime.genres %}
+                    <span class="card-genre">{{ genre.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if anime.trailer.url %}
+            <div style="margin-top: 12px;">
+                <a href="{{ anime.trailer.url }}" target="_blank" class="btn btn-primary btn-small">Watch Trailer</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    </div>
+</section>
+
+<section class="section" style="margin-top: 40px;">
+    <div class="section-title">
+        <h2>If you liked this anime you will also like these animes</h2>
+    </div>
+    {% if related_animes %}
+    <div class="card-grid-small">
+        {% for anime in related_animes %}
+        <article class="card card-small">
+            {% if anime.image_url %}
+            {% if anime.mal_id %}<a href="{% url 'anime_detail' anime.mal_id %}">{% endif %}
+                <img class="card-image" src="{{ anime.image_url }}" alt="{{ anime.title }}" />
+                {% if anime.mal_id %}</a>{% endif %}
+            {% endif %}
+            <div class="card-top">
+                <span class="card-genre">{{ anime.genre }}</span>
+                <span class="card-rating">★ {{ anime.rating }}</span>
+            </div>
+            <h3>
+                {% if anime.mal_id %}<a href="{% url 'anime_detail' anime.mal_id %}"
+                    style="text-decoration: none; color: inherit;">{% endif %}
+                    {{ anime.title }}
+                    {% if anime.mal_id %}</a>{% endif %}
+            </h3>
+            <p class="card-tagline">{{ anime.tagline }}</p>
+            <p class="card-reason">{{ anime.reason }}</p>
+            <div class="card-meta">
+                <span>{{ anime.seasons }}</span>
+                <span>{{ anime.genres|join:", " }}</span>
+            </div>
+            {% if user.is_authenticated and anime.mal_id %}
+            {% if anime.in_watchlist %}
+            <button class="btn btn-secondary btn-small" type="button" disabled>
+                In watchlist
+            </button>
+            {% else %}
+            <form method="post" action="{% url 'watchlist_add' %}" class="wishlist-form">
+                {% csrf_token %}
+                <input type="hidden" name="mal_id" value="{{ anime.mal_id }}">
+                <input type="hidden" name="title" value="{{ anime.title }}">
+                <input type="hidden" name="tagline" value="{{ anime.tagline }}">
+                <input type="hidden" name="description" value="{{ anime.reason }}">
+                <input type="hidden" name="main_genre" value="{{ anime.genre }}">
+                <input type="hidden" name="seasons" value="{{ anime.seasons }}">
+                <input type="hidden" name="genres_text" value="{{ anime.genres|join:', ' }}">
+                <input type="hidden" name="image_url" value="{{ anime.image_url }}">
+                <input type="hidden" name="rating" value="{{ anime.rating }}">
+                <button type="submit" class="btn btn-secondary btn-small">
+                    Add to watchlist
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No related anime found.</p>
+    {% endif %}
+</section>
+{% endblock %}

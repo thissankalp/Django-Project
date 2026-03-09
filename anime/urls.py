@@ -12,6 +12,7 @@ urlpatterns = [
     path("watchlist/", views.wishlist_list, name="watchlist"),
     path("watchlist/add/", views.wishlist_add, name="watchlist_add"),
     path("watchlist/<int:pk>/remove/", views.wishlist_remove, name="watchlist_remove"),
+    path("anime/<int:mal_id>/", views.anime_detail, name="anime_detail"),
     path("signup/", views.signup, name="signup"),
     path(
         "login/",
